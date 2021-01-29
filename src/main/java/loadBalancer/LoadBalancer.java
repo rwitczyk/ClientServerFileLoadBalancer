@@ -1,6 +1,7 @@
 package loadBalancer;
 
 import common.FileMock;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import server.Server;
 
@@ -13,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
 @Slf4j
+@RequiredArgsConstructor(staticName = "getInstance")
 public class LoadBalancer {
 
     private Server server = new Server();

@@ -4,6 +4,7 @@ import common.FileMock;
 import loadBalancer.LoadBalancer;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDateTime;
@@ -11,12 +12,14 @@ import java.time.LocalDateTime;
 @Slf4j
 public class WatchFileService {
 
-    private LoadBalancer loadBalancer = new LoadBalancer();
+    private LoadBalancer loadBalancer = LoadBalancer.getInstance();
 
-    public void init() {
+    public void init(String userName) {
         try {
             WatchService watchService = FileSystems.getDefault().newWatchService();
-            Path path = Paths.get("clients");
+            Path path = Paths.get("clients/" + userName);
+            new File("clients/" + userName).mkdir();
+
             path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
 
             WatchKey key;
@@ -25,6 +28,7 @@ public class WatchFileService {
                     FileMock fileMock = FileMock.builder()
                             .fileName(event.context().toString())
                             .sentDate(LocalDateTime.now())
+                            .userName(userName)
                             .build();
                     log.info("Wykryto nowy plik - " + fileMock.toString());
                     loadBalancer.sendFile(fileMock);

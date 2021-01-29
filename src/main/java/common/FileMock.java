@@ -16,8 +16,10 @@ public class FileMock {
 
     private LocalDateTime sentDate;
 
+    private final String userName;
+
     @Override
     public String toString() {
-        return "fileName: " + fileName + ", data dodania: " + sentDate + ", size: " + size + "MB";
+        return "User: " + userName + ", fileName: " + fileName + ", data dodania: " + sentDate + ", size: " + size + "MB";
     }
 }
