@@ -1,4 +1,5 @@
 import client.WatchFileService;
+import loadBalancer.LoadBalancer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.Executors;
@@ -12,8 +13,10 @@ public class StartApplication {
         WatchFileService watchFileService = new WatchFileService();
 
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
-        executor.execute(() -> watchFileService.init("user1"));
-        executor.execute(() -> watchFileService.init("user2"));
-        executor.execute(() -> watchFileService.init("user3"));
+        executor.execute(() -> watchFileService.initUser("user1"));
+        executor.execute(() -> watchFileService.initUser("user2"));
+        executor.execute(() -> watchFileService.initUser("user3"));
+
+        LoadBalancer.getInstance().initSendFilesToServer();
     }
 }

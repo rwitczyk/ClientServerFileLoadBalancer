@@ -14,7 +14,7 @@ public class WatchFileService {
 
     private LoadBalancer loadBalancer = LoadBalancer.getInstance();
 
-    public void init(String userName) {
+    public void initUser(String userName) {
         try {
             WatchService watchService = FileSystems.getDefault().newWatchService();
             Path path = Paths.get("clients/" + userName);
@@ -30,8 +30,8 @@ public class WatchFileService {
                             .sentDate(LocalDateTime.now())
                             .userName(userName)
                             .build();
-                    log.info("Wykryto nowy plik - " + fileMock.toString());
-                    loadBalancer.sendFile(fileMock);
+                    log.info("Thread-" + Thread.currentThread().getId() + " | Wykryto nowy plik - " + fileMock.toString());
+                    loadBalancer.addFileToSend(fileMock);
                 }
                 key.reset();
             }
@@ -40,6 +40,5 @@ public class WatchFileService {
         } catch (InterruptedException e) {
             log.error("Blad pobrania watchService", e);
         }
-
     }
 }

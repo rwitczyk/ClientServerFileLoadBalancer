@@ -9,12 +9,12 @@ public class FileMockLoadBalancer implements Comparable<FileMockLoadBalancer> {
     private FileMock fileMock;
     private int priority;
 
-    public FileMockLoadBalancer(FileMock fileMock) {
+    FileMockLoadBalancer(FileMock fileMock) {
         this.fileMock = fileMock;
     }
 
     @Override
     public int compareTo(FileMockLoadBalancer o) {
-        return o.getPriority() > o.getPriority() ? 1 : -1;
+        return this.getPriority() < o.getPriority() ? 1 : -1;
     }
 }
