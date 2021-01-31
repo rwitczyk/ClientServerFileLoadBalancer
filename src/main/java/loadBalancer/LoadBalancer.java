@@ -6,6 +6,8 @@ import server.Server;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -21,6 +23,8 @@ public class LoadBalancer {
     private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
     private BlockingQueue<FileMockLoadBalancer> collectionsFiles = new PriorityBlockingQueue<>(1024);
+
+    private Map<String, Integer> userAllFilesSize = new HashMap<>();
 
     private static LoadBalancer INSTANCE;
 
@@ -68,6 +72,7 @@ public class LoadBalancer {
     private void recalculatePriorityToAllFiles() {
         log.info("Thread-" + Thread.currentThread().getId() + " | Przeliczam priorytet dla kolekcji plikow");
         for (FileMockLoadBalancer fileMockLoadBalancer : collectionsFiles) {
+            updateSizeOfAllUserFiles(fileMockLoadBalancer);
             fileMockLoadBalancer.setPriority(calculatePriority(fileMockLoadBalancer));
         }
 
@@ -79,10 +84,24 @@ public class LoadBalancer {
         collectionsFiles.addAll(tempQueue);
     }
 
-    private int calculatePriority(FileMockLoadBalancer fileMockLoadBalancer) {
+    private void updateSizeOfAllUserFiles(FileMockLoadBalancer fileMockLoadBalancer) {
+        String userName = fileMockLoadBalancer.getFileMock().getUserName();
+        if (userAllFilesSize.containsKey(userName)) {
+            userAllFilesSize.put(userName, userAllFilesSize.get(userName) + fileMockLoadBalancer.getFileMock().getSize());
+        } else {
+            userAllFilesSize.put(userName, fileMockLoadBalancer.getFileMock().getSize());
+        }
+    }
+
+    private double calculatePriority(FileMockLoadBalancer fileMockLoadBalancer) {
+        // Wzór: T/(S*A*0.1)
+        // T - czas oczekiwania na przeslanie danego pliku
+        // S - rozmiar aktualniego przetwarzanego pliku
+        // A - rozmiar wszystkich plikow uzytkownika
         int fileSize = fileMockLoadBalancer.getFileMock().getSize();
         LocalDateTime sentDate = fileMockLoadBalancer.getFileMock().getSentDate();
         Duration durationBetweenNowAndSentDate = Duration.between(sentDate, LocalDateTime.now());
-        return (Integer.valueOf(String.valueOf(durationBetweenNowAndSentDate.getSeconds() + 1)) * 100) / fileSize;
+        int allUserFilesSize = userAllFilesSize.get(fileMockLoadBalancer.getFileMock().getUserName());
+        return Double.valueOf(String.valueOf(durationBetweenNowAndSentDate.getSeconds() + 1)) / (fileSize * allUserFilesSize * 0.1);
     }
 }

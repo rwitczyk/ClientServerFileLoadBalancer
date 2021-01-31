@@ -7,7 +7,7 @@ import lombok.Data;
 public class FileMockLoadBalancer implements Comparable<FileMockLoadBalancer> {
 
     private FileMock fileMock;
-    private int priority;
+    private double priority;
 
     FileMockLoadBalancer(FileMock fileMock) {
         this.fileMock = fileMock;
